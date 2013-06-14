@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Graph</title>
+  
+  <!-- clear cache -->
+  <meta http-equiv="cache-control" content="max-age=0" />
+  <meta http-equiv="cache-control" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta http-equiv="pragma" content="no-cache" />
+
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  
+  <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
+  <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.8.2.min.js" type="text/javascript"></script>
+  <script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.24/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="js/script.js"></script>
+  
+  <!--[if gte IE 9]>
+  <style type="text/css">
+    .gradient {
+       filter: none;
+    }
+  </style>
+<![endif]-->
+  
+  <script>
+  	$(document).ready(function(){
+		var container = $("#graph_container");
+		var width = container.width();
+		var height = container.height();
+		BarGraph.drawBarGraph(container[0],width,height,"facebook_friends.json");
+	});
+  </script>
+  </head>
+  <body>
+  	<div id="graph_container"></div>
+  </body>
+</html>
