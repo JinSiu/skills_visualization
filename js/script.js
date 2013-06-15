@@ -32,8 +32,38 @@ var Network = {
 			Network.network = network;
 			Network.networkContainer = container;
 			
+			//search box
+			$("#select_skill").select2({
+				minimumInputLength: 1,
+				query: function (query) {
+					var data = {results: []}, i;
+					for (i = 0; i < Network.network.skills.length; i++) {
+						if (Network.network.skills[i].name.indexOf(query.term) == 0) {
+							data.results.push({id: Network.network.skills[i].name, text: Network.network.skills[i].name});
+						}
+					}
+					query.callback(data);
+				}
+			});
+			
+			//click event
+			$("#select_skill").change(function(){
+				var skill = $(this).val();
+				var currentId = 0;
+				for (var i = 0; i < Network.network.skills.length; i++) {
+					if (Network.network.skills[i].name == skill) {
+						currentId = i;
+						break;
+					}
+				}
+				
+				Network.drawNetwork(currentId);
+			});
+			
+			//draw network
 			Network.drawNetwork();
 		});
+		
 	},
 	
 	
