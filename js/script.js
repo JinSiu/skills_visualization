@@ -2,82 +2,37 @@
 /* 	Date : 06/13/2013
 	Developer : TianYu
 */
-var BarGraph = {
-	marginLeft : 20,
-	marginTop: 20,
-	marginRight:20,
-	marginBottom:20,
-	
+var Network = {
+	margin : [10,10,10,10],// left, right, top bottom
+	radius : 7,
+	selectedRadius : 15,
+	connectionWidth : 2,
 	labelPadding : 20,
+	
+	network : undefined,
+	networkContainer : undefined,
 	
 
 	
 	
-	/***** drawBarGraph  *******************/
+	/***** drawNetwork  *******************/
 	/*	functionality
-			draw bar graph
+			draw network
 		parameters:
 			container : graph container
-			width: container width
-			height: container height
 			fileName : Json file name
 	*/
-	drawBarGraph : function (container, width, height,fileName){
+	draw : function (container,fileName){
 		fileName = "data/"+fileName; 
-		d3.json(fileName, function(error, json_data) {
+		d3.json(fileName, function(error, network) {
 			if (error != null) {
 				return;
 			}
 			
-			//get/calculate percentage of all relationship_status to draw the chart
-			var data = BarGraph.getData(json_data);
+			Network.network = network;
+			Network.networkContainer = container;
 			
-			//sort data with percentage
-			data.sort(function(a,b) {
-				return a['percentage'] - b['percentage']
-			});
-			
-			//calculate barHeight and barPadding
-			var barHeight,
-				barPadding;
-				var totalHeight = height - (BarGraph.marginTop + BarGraph.marginBottom);
-				var barTotalHeight = totalHeight / data.length;
-				barHeight = barTotalHeight * 3 / 4; 
-				barPadding = barTotalHeight / 4;
-			
-			//draw chart
-			var y = function(d,i) { return i*(barHeight+barPadding);};
-			var barWidth = function(d,i) { return width * d['percentage'] / 100 ; };
-			
-			var svg = d3.select(container).append("svg")
-				.attr("class", "barchart")
-				.attr("width",width)
-				.attr("height",height);
-			
-			var chart = svg.append('g')
-				.attr('transform', 'translate(' + BarGraph.marginLeft + ','+BarGraph.marginTop+')');
-
-			
-			//draw chart	
-			chart.selectAll(".relationship_status")
-				.data(data)
-	   			.enter().append("rect")
-	     		.attr("class","relationship_status")
-				.attr("y",y)
-				.attr("width",barWidth)
-				.attr("height",barHeight)
-				.attr("fill","#FFFFFF");
-				
-			//draw chart label
-			chart.selectAll(".relationship_status_label")
-				.data(data)
-				.enter().append("text")
-				.attr("class","relationship_status_label")
-				.attr("x",function(d,i){ return barWidth(d,i) + BarGraph.labelPadding;})
-				.attr("y", function(d,i){ return y(d,i)+barHeight/2;})
-				.attr("dy","0.35em")
-				.text(function(d,i) { return d['percentage'] + "% " + d['label']});
-				
+			Network.drawNetwork();
 		});
 	},
 	
@@ -91,151 +46,76 @@ var BarGraph = {
 	
 	
 	
-	/*************  getData  ***********************/
-	/*	functionality
-			get/calculate percentage of all relationship_status
-		parameter
-			json_data : json data
-	*/
-	getData : function  (json_data) {
-		var single = 0,
-			in_a_relationship = 0,
-			engaged = 0,
-			married = 0,
-			it_complicated = 0,
-			in_an_open_relationship = 0,
-			widowed = 0,
-			separated = 0,
-			divorced = 0,
-			in_a_civil_union = 0,
-			in_a_domestic_partnership = 0,
-			not_listed = 0,
-			na = 0;
-			
+	drawNetwork : function (selectedSkillId) {
+		$(this.networkContainer).html("");
+
 		
-		var totalCount = json_data.length;
-		//loop all of the persons
-		for (var i = 0; i < totalCount; i++) {
-			var person = json_data[i];
-			
-			//calculate the count according to their relationship_status
-			var relationship_status = person.relationship_status;
-			if (relationship_status != null) {
-				relationship_status = relationship_status.toLowerCase();
+		if (selectedSkillId == undefined) {
+			selectedSkillId = Math.floor(Math.random()*(this.network.skills.length));
+		}
+		var width = $(this.networkContainer).width(),
+			height = $(this.networkContainer).height(),
+			realWidth = width - (this.margin[0] + this.margin[1]); 
+			realHeight = height - (this.margin[1] + this.margin[3]);
+		
+		for (var i = 0; i < this.network.skills.length; i++) {
+			if (i == selectedSkillId) {
+				this.network.skills[i].cx = realWidth/2;
+				this.network.skills[i].cy = realHeight/2;
 			}
-			switch (relationship_status) {
-				case "single" :
-					single ++;
-					break;
-				case "in a relationship" :
-					in_a_relationship ++ ;
-					break;
-				case "engaged" :
-					engaged ++;
-					break;
-				case "married" :
-					married ++;
-					break;
-				case "it's complicated" :
-					it_complicated ++ ;
-					break;
-				case "in an open relationship" :
-					in_an_open_relationship ++ ;
-					break;
-				case "widowed" :
-					widowed ++ ;
-					break;
-				case "separated" :
-					separated ++ ;
-					break;
-				case "divorced" :
-					divorced ++ ;
-					break;
-				case "in a civil union" :
-					in_a_civil_union ++ ;
-					break;
-				case "in a domestic partnership" :
-					in_a_domestic_partnership ++ ;
-					break;
-				case "not listed" :
-					not_listed ++ ;
-					break;
-				case null :
-					na ++ ;
-					break;
+			else {
+				this.network.skills[i].cx = Math.random()*realWidth;
+				this.network.skills[i].cy = Math.random()*realHeight;
 			}
 		}
 		
-		//add status labels and percentages into new array
-		var data = 	[],
-			status = [];
+		//draw network
+		var svg = d3.select(Network.networkContainer).append("svg")
+			.attr("width",width)
+			.attr("height",height);
+		
+		var networkPanel = svg.append('g')
+			.attr("class","network_panel")
+			.attr('transform', 'translate(' + this.margin[0] + ','+this.margin[3]+')');
+		
+		//draw connections
+		networkPanel.selectAll(".connections")
+			.data(this.network.connections)
+			.enter().append("line")
+			.attr("class","connections")
+			.attr("x1",function(d,i){ return Network.network.skills[d.source].cx;})
+			.attr("y1",function(d,i){ return Network.network.skills[d.source].cy;})
+			.attr("x2",function(d,i){ return Network.network.skills[d.target].cx;})
+			.attr("y2",function(d,i){ return Network.network.skills[d.target].cy;})
+			.style("stroke-width",2)
+			.style("stroke",function(d,i){ return (d.degree == 1)? "blue" : "green";})
+			.style("display",function(d,i) { return (d.source == selectedSkillId)? "block" : "none"; });
+		
+		//draw skills	
+		networkPanel.selectAll(".skills")
+			.data(this.network.skills)
+   			.enter().append("circle")
+     		.attr("class","skills")
+			.attr("cx",function(d,i){ return d.cx; })
+			.attr("cy",function(d,i){ return d.cy; })
+			.attr("r",function(d,i) { return (i == selectedSkillId)? Network.selectedRadius : Network.radius;})
+			.attr("fill", function(d,i) { return (i == selectedSkillId)? "red" : "#EF7959" })
+			.style("cursor","pointer")
+			.on("click",function(d,i){ Network.drawNetwork(i) });
 			
-		status['label'] = "single";
-		status['percentage'] = parseFloat(single/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		
-		status = [];
-		status['label'] = "in a relationship";
-		status['percentage'] = parseFloat(in_a_relationship/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "engaged";
-		status['percentage'] = parseFloat(engaged/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "married";
-		status['percentage'] = parseFloat(married/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "it's complicated";
-		status['percentage'] = parseFloat(it_complicated/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "in an open relationship";
-		status['percentage'] = parseFloat(in_an_open_relationship/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "widowed";
-		status['percentage'] = parseFloat(widowed/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "separated";
-		status['percentage'] = parseFloat(separated/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "divorced";
-		status['percentage'] = parseFloat(divorced/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "in a civil union";
-		status['percentage'] = parseFloat(in_a_civil_union/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "in a domestic partnership";
-		status['percentage'] = parseFloat(in_a_domestic_partnership/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "not listed";
-		status['percentage'] = parseFloat(not_listed/totalCount*100).toFixed(2);
-		data.push(status);
-		
-		status = [];
-		status['label'] = "n/a";
-		status['percentage'] = parseFloat(na/totalCount*100).toFixed(2);
-		data.push(status);
-		return data;
-		
+		//draw skill label
+		networkPanel.selectAll(".skill_labels")
+			.data(this.network.skills)
+   			.enter().append("text")
+     		.attr("class","skill_labels")
+			.attr("x",function(d,i) { return d.cx + Network.labelPadding ;})
+			.attr("y",function(d,i) { return d.cy; })
+			.attr("dy",".35em")
+			.attr("fill","white")
+			.style("font-size","20px")
+			.text(function(d,i){ return (i == selectedSkillId)? d.name : ""; });
+			
+			
 	}
 }
 

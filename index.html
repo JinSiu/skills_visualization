@@ -27,14 +27,14 @@
   
   <script>
   	$(document).ready(function(){
-		var container = $("#graph_container");
-		var width = container.width();
-		var height = container.height();
-		BarGraph.drawBarGraph(container[0],width,height,"facebook_friends.json");
+		var container = $("#network_container");
+		Network.draw(container[0],"skills.json");
 	});
   </script>
   </head>
   <body>
-  	<div id="graph_container"></div>
+	<center>
+		<div id="network_container"></div>
+	</center>
   </body>
 </html>
