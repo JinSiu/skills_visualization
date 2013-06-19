@@ -57,7 +57,11 @@ var Network = {
 					}
 				}
 				
-				Network.drawNetwork(currentId);
+				$(Network.networkContainer).animate({opacity : 0},500,function(){
+						Network.drawNetwork(currentId);
+						$(Network.networkContainer).animate({opacity: 1},500);
+					});
+				
 			});
 			
 			//draw network
@@ -131,7 +135,13 @@ var Network = {
 			.attr("r",function(d,i) { return (i == selectedSkillId)? Network.selectedRadius : Network.radius;})
 			.attr("fill", function(d,i) { return (i == selectedSkillId)? "red" : "#EF7959" })
 			.style("cursor","pointer")
-			.on("click",function(d,i){ Network.drawNetwork(i) });
+			.style("display",function(d,i){ return (i == selectedSkillId || Network.isConnected(selectedSkillId,i))? "block" : "none" })
+			.on("click",function(d,i){ 
+				$(Network.networkContainer).animate({opacity : 0},500,function(){
+						Network.drawNetwork(i);
+						$(Network.networkContainer).animate({opacity: 1},500);
+					});
+			});
 			
 		//draw skill label
 		networkPanel.selectAll(".skill_labels")
@@ -143,9 +153,41 @@ var Network = {
 			.attr("dy",".35em")
 			.attr("fill","white")
 			.style("font-size","20px")
-			.text(function(d,i){ return (i == selectedSkillId)? d.name : ""; });
+			.text(function(d,i){ return d.name; })
+			.style("display",function(d,i){ return (i == selectedSkillId || Network.isConnected(selectedSkillId,i))? "block" : "none" });
 			
 			
+	},
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***********************  isConnected  ****************************/
+	/*	functionality
+			detect weather two skills are connected or not
+		parameters
+			selectedSkillId : selected skill id
+			skillId : skill id
+	*/
+	isConnected : function (selectedSkillId,skillId) {
+		var isConnected = false;
+		var num = Network.network.connections.length;
+		for (var i = 0 ; i < num ; i ++ ) {
+			var connection = Network.network.connections[i];
+			if (connection.source == selectedSkillId && connection.target == skillId) {
+				isConnected = true;
+				break;
+			}
+		}
+		
+		return isConnected;
 	}
 }
 
